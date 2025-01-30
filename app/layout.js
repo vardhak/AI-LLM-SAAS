@@ -2,8 +2,6 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Provider from "./provider";
-import Page from "./(auth)/sign-up/[[...sign-up]]/page";
-import Home from "./page";
 
 const outfit = Outfit({ subsets: ["latin"] });
 
