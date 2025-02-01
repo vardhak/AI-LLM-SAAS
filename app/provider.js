@@ -32,11 +32,13 @@ function Provider({ children }) {
     //     })
     //     .returning({ id: usersTable.id });
 
-    //     console.log(userRes);
+    //   console.log(userRes);
     // }
-    const resp = axios.post("/api/create-user", { user: user });
-    console.log((await resp).data);
+
+    const resp = axios.post("api/create-user", { user: user });
+    // console.log((await resp).data);
   };
+
 
   return <div>{children}</div>;
 }
