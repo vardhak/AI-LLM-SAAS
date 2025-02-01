@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { RefreshCcw } from "lucide-react";
+import { Loader, Loader2, LoaderCircle, LoaderPinwheel, LucideLoader, RefreshCcw } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
@@ -33,7 +33,7 @@ function CourseCard({ course }) {
         <div className="mt-3 flex justify-end">
           {course?.status == "Generating" ? (
             <h2 className="text-xs bg-gray-400 text-white flex justify-between rounded-full px-2 py-1 items-center">
-              <RefreshCcw  className="h-3 w-3 mr-1"/> Generating...
+              <LoaderPinwheel className="h-3 w-3 mr-1 animate-spin" /> Generating...
             </h2>
           ) : (
             <Button>View</Button>

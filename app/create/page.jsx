@@ -6,9 +6,14 @@ import TopicInput from "./_components/topicInput";
 import axios from "axios";
 import { v4 as uuidv4 } from "uuid";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import { Loader2, LoaderPinwheel } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 function CreatePage() {
   const { user } = useUser();
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState([]);
   const handleUserInput = (fieldname, fieldvalue) => {
@@ -22,8 +27,11 @@ function CreatePage() {
 
   const [step, setStep] = useState(0);
 
+  const router = useRouter();
+
   // uses to save user input and generate course layout using ai
   const generateCourseOutline = async () => {
+    setIsLoading(true);
     const courseId = uuidv4();
     const daata = {
       _courseId: courseId,
@@ -35,6 +43,11 @@ function CreatePage() {
     const result = await axios.post("api/generate-course-outline", daata);
 
     // console.log(result.data);
+    router.replace("/dashboard");
+    toast({
+      title: "Course Status",
+      description: "Your Course Is Being Generating, Please Wait Or Refresh !",
+    });
   };
 
   return (
@@ -76,7 +89,16 @@ function CreatePage() {
         {step == 0 ? (
           <Button onClick={() => setStep(step + 1)}>next</Button>
         ) : (
-          <Button onClick={generateCourseOutline}>Generate</Button>
+          <Button disabled={isLoading} onClick={generateCourseOutline}>
+            {isLoading ? (
+              <>
+                <LoaderPinwheel className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              "Generate"
+            )}
+          </Button>
         )}
       </div>
     </div>

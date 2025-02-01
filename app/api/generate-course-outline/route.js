@@ -1,6 +1,7 @@
 import { courseOutlineAiModel } from "@/configs/aiModel";
 import { db } from "@/configs/db";
 import { STUDY_DATA_TABLE } from "@/configs/schema";
+import { inngest } from "@/inngest/client";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -20,7 +21,7 @@ export async function POST(req) {
 
   const aiResult = aiResponse.response.text();
 
-  const cleanAiRes = aiResult.replace(/```json\n|\n```/g,"").trim();
+  const cleanAiRes = aiResult.replace(/```json\n|\n```/g, "").trim();
 
   const parsedData = JSON.parse(cleanAiRes);
 
@@ -35,7 +36,21 @@ export async function POST(req) {
       difficultyLevel: _difficultyLevel,
       courseLayout: parsedData,
     })
-    .returning({ STUDY_DATA_TABLE });
+    .returning({ resp: STUDY_DATA_TABLE });
+
+  // trigger the generate notes functions
+
+  const result = await inngest.send({
+    name: "notes.generate",
+    data: {
+      course: dbResult[0].resp,
+    },
+  });
+  console.log(result);
+
+
+  // redirect to the dashboard page
+    
 
   console.log(dbResult);
   return NextResponse.json({ result: dbResult[0] });

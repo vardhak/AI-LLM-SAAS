@@ -3,6 +3,8 @@ import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import CourseCard from "./courseCard";
+import { Button } from "@/components/ui/button";
+import { RefreshCcw } from "lucide-react";
 
 function Courses() {
   const { user } = useUser();
@@ -25,9 +27,14 @@ function Courses() {
 
   return (
     <div className="mt-10">
-      <h2 className="font-bold text-3xl">Your Study Material</h2>
+      <h2 className="font-bold text-3xl flex justify-between items-center">
+        Your Study Material
+        <Button variant="outline" className="border-primary text-primary w-20 h-10">
+          <RefreshCcw /> Refresh
+        </Button>
+      </h2>
 
-      <div className="grid sm:grid-cols-2 md grid-cols-2 lg:grid-cols-3 mt-2 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 mt-2 gap-5">
         {courseData?.map((course, index) => (
           <CourseCard course={course} key={index} />
         ))}
