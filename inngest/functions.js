@@ -64,21 +64,29 @@ export const GenerateNotes = inngest.createFunction(
       let index = 0;
 
       Chapters.forEach(async (chapter) => {
-        //   //         const PROMPT = `generate  the  content or data for given each fileds and cover evary topic in topic list and give the whole output as html do not inclued html,head,body ,title tag ,chapter no = ${chapter?.chapterNumber} , chapterTitle = ${chapter?.chapterTitle}, emoji=${chapter?.emoji},
-        //   // chapterSummary=${chapter?.chapterSummary} , topics = ${chapter?.topics}`;
+        //         const PROMPT = `generate  the  content or data for given each fileds and cover evary topic in topic list and give the whole output as html do not inclued html,head,body ,title tag ,chapter no = ${chapter?.chapterNumber} , chapterTitle = ${chapter?.chapterTitle}, emoji=${chapter?.emoji},
+        // chapterSummary=${chapter?.chapterSummary} , topics = ${chapter?.topics}`;
 
-        //   const PROMPT = `give provided info into html format with additionals information for each topic do not include html tag, head tag body tag and title tag ${JSON.stringify(
-        //     chapter
-        //   )}`;
+        // const PROMPT = `give provided info into html format with additionals information for each topic do not include html tag, head tag body tag and title tag ${JSON.stringify(
+        //   chapter
+        // )}`;
 
-        //   const result = await notesGenAiModel2.sendMessage(PROMPT);
+        const PROMPT = `generate a detailed content or information on each of the topic in provided topic list, give some examples or formulas or any additional data if needed provide in clean json format  data only as(topics:[{topicTitle:"title",data:"data"}]) and don't add any specail symbols or \n or any thing messy just provide clean text, use data -- ${JSON.stringify(
+          chapter.topics
+        )}`;
 
-        //   const aiResponse = result.response.text();
+        const result = await notesGenAiModel2.sendMessage(PROMPT);
+
+        const aiResponse = result.response.text();
+
+        const cleanAiRes = aiResponse.replace(/```json\n|\n```/g, "").trim();
+
+        const parsedData = JSON.parse(cleanAiRes);
 
         await db.insert(CHAPTER_NOTES_TABLE).values({
-          chapterId: course?.courseLayout?.chapterNumber,
+          chapterId: index,
           courseId: course?.courseId,
-          notes: chapter,
+          notes: parsedData,
         });
         index = index + 1;
       });

@@ -28,7 +28,7 @@ function Course() {
         {/* course intro */}
         <CourseIntro course={course} />
         {/* study material opt */}
-        <StudyMaterialList />
+        <StudyMaterialList courseId={courseId} />
         {/* chapters list */}
         <ChapterList course={course} />
       </div>
