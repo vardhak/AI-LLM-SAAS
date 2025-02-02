@@ -16,7 +16,7 @@ export async function POST(req) {
     _courseType +
     " and level of difficulty will be " +
     _difficultyLevel +
-    " with summery of course, List of chapters along with summery for each chapter, topic list in list in chapter, all in JSON format.";
+    " with summery of course, List of chapters along with summery and emoji icon for each chapter, topic list in list in chapter, all in JSON format.";
   const aiResponse = await courseOutlineAiModel.sendMessage(PROMPT);
 
   const aiResult = aiResponse.response.text();
@@ -36,7 +36,7 @@ export async function POST(req) {
       difficultyLevel: _difficultyLevel,
       courseLayout: parsedData,
     })
-    .returning({ resp: STUDY_DATA_TABLE });
+    .returning({resp:STUDY_DATA_TABLE});
 
   // trigger the generate notes functions
 
@@ -48,9 +48,7 @@ export async function POST(req) {
   });
   console.log(result);
 
-
   // redirect to the dashboard page
-    
 
   console.log(dbResult);
   return NextResponse.json({ result: dbResult[0] });

@@ -5,7 +5,7 @@ import {
   STUDY_DATA_TABLE,
   usersTable,
 } from "@/configs/schema";
-import { notesGenAiModel } from "@/configs/aiModel";
+import { notesGenAiModel2 } from "@/configs/aiModel";
 import { eq } from "drizzle-orm";
 
 export const helloWorld = inngest.createFunction(
@@ -59,26 +59,27 @@ export const GenerateNotes = inngest.createFunction(
     const { course } = event.data;
 
     //Generate notes for each chapter with ai
-
     const notesResult = await step.run("Generate chapter notes", async () => {
       const Chapters = course?.courseLayout?.chapters;
       let index = 0;
 
       Chapters.forEach(async (chapter) => {
-        const PROMPT = `Generate exam material detail content for each chapter, Make sure to include all topic point in the content, make sure to give content in HTML format, do not add (HTML,HEAD,BODY TITLE tag) the chapters : ${JSON.stringify(
-          chapter
-        )}`;
+        //   //         const PROMPT = `generate  the  content or data for given each fileds and cover evary topic in topic list and give the whole output as html do not inclued html,head,body ,title tag ,chapter no = ${chapter?.chapterNumber} , chapterTitle = ${chapter?.chapterTitle}, emoji=${chapter?.emoji},
+        //   // chapterSummary=${chapter?.chapterSummary} , topics = ${chapter?.topics}`;
 
-        const result = await notesGenAiModel.sendMessage(PROMPT);
+        //   const PROMPT = `give provided info into html format with additionals information for each topic do not include html tag, head tag body tag and title tag ${JSON.stringify(
+        //     chapter
+        //   )}`;
 
-        const aiResponse = result.response.text();
+        //   const result = await notesGenAiModel2.sendMessage(PROMPT);
+
+        //   const aiResponse = result.response.text();
 
         await db.insert(CHAPTER_NOTES_TABLE).values({
-          chapterId: index,
+          chapterId: course?.courseLayout?.chapterNumber,
           courseId: course?.courseId,
-          notes: aiResponse,
+          notes: chapter,
         });
-
         index = index + 1;
       });
       return "completed";

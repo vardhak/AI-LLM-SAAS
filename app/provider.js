@@ -35,7 +35,7 @@ function Provider({ children }) {
     //   console.log(userRes);
     // }
 
-    const resp = axios.post("api/create-user", { user: user });
+    // const resp = axios.post("api/create-user", { user: user });
     // console.log((await resp).data);
   };
 
