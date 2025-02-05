@@ -43,6 +43,8 @@ function CreatePage() {
     const result = await axios.post("api/generate-course-outline", daata);
 
     // console.log(result.data);
+    // console.log(result);
+    setIsLoading(false);
     router.replace("/dashboard");
     toast({
       title: "Course Status",

@@ -5,7 +5,6 @@ import {
   boolean,
   json,
   integer,
-  text,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
@@ -30,5 +29,13 @@ export const CHAPTER_NOTES_TABLE = pgTable("chapterNotes", {
   id: serial().primaryKey(),
   courseId: varchar().notNull(),
   chapterId: integer().notNull(),
-  notes: text(),
+  notes: json(),
+});
+
+export const STUDY_TYPE_CONTENT_TABLE = pgTable("studyTypeContent", {
+  id: serial().primaryKey(),
+  courseId: varchar().notNull(),
+  content: json(),
+  type: varchar().notNull(),
+  status: varchar().default("GENERATING"),
 });

@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import MaterialCard from "./MaterialCard";
 import axios from "axios";
+import { resolve } from "styled-jsx/css";
 
-function StudyMaterialList({ courseId }) {
+function StudyMaterialList({ courseId, course }) {
   const materialList = [
     {
       name: "Notes/Chapters",
@@ -35,10 +36,11 @@ function StudyMaterialList({ courseId }) {
   ];
 
   const [studyMaterial, setStudyMaterial] = useState([]);
+  const [load, setLoad] = useState(false);
 
   useEffect(() => {
     getStudyMaterial();
-  });
+  }, []);
 
   const getStudyMaterial = async () => {
     const result = await axios.post("/api/study-type", {
@@ -47,23 +49,29 @@ function StudyMaterialList({ courseId }) {
     });
 
     setStudyMaterial(result.data);
-    console.log(result.data);
+    console.log("updated !!!! :)");
+    setLoad(true);
   };
 
   return (
-    <div className="mt-5">
-      <h2 className="capitalize font-medium text-xl">Study Material</h2>
+    load && (
+      <div className="mt-5">
+        <h2 className="capitalize font-medium text-xl">Study Material</h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-5">
-        {materialList.map((item, index) => (
-          <MaterialCard
-            key={index}
-            item={item}
-            studyTypeContent={studyMaterial}
-          />
-        ))}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-5">
+          {materialList?.map((item, index) => (
+            <MaterialCard
+              key={index}
+              item={item}
+              studyTypeContent={studyMaterial}
+              courseId={courseId}
+              chapters={course?.courseLayout?.chapters}
+              reFreshCard={getStudyMaterial}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    )
   );
 }
 

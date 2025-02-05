@@ -19,7 +19,7 @@ function Course() {
 
     setCourse(result.data.course);
 
-    console.log(result.data);
+    // console.log(result.data);
   };
   return (
     <div>
@@ -28,7 +28,7 @@ function Course() {
         {/* course intro */}
         <CourseIntro course={course} />
         {/* study material opt */}
-        <StudyMaterialList courseId={courseId} />
+        <StudyMaterialList courseId={courseId} course={course} />
         {/* chapters list */}
         <ChapterList course={course} />
       </div>

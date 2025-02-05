@@ -1,7 +1,8 @@
-import { courseOutlineAiModel } from "@/configs/aiModel";
+import { courseOutlineAiModel, notesGenAiModel4 } from "@/configs/aiModel";
 import { db } from "@/configs/db";
-import { STUDY_DATA_TABLE } from "@/configs/schema";
+import { CHAPTER_NOTES_TABLE, STUDY_DATA_TABLE } from "@/configs/schema";
 import { inngest } from "@/inngest/client";
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -36,20 +37,19 @@ export async function POST(req) {
       difficultyLevel: _difficultyLevel,
       courseLayout: parsedData,
     })
-    .returning({resp:STUDY_DATA_TABLE});
+    .returning({ resp: STUDY_DATA_TABLE });
 
   // trigger the generate notes functions
 
-  const result = await inngest.send({
+  const NotesResult = await inngest.send({
     name: "notes.generate",
     data: {
       course: dbResult[0].resp,
     },
   });
-  console.log(result);
 
-  // redirect to the dashboard page
-
-  console.log(dbResult);
-  return NextResponse.json({ result: dbResult[0] });
+  return NextResponse.json([
+    { result: dbResult[0] },
+    { NotesResult: NotesResult },
+  ]);
 }
