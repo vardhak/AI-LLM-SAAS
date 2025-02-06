@@ -10,7 +10,7 @@ export async function POST(req) {
   const { courseId, studyType } = await req.json();
 
   if (studyType == "ALL") {
-    const notes = await db
+    let notes = await db
       .select()
       .from(CHAPTER_NOTES_TABLE)
       .where(eq(CHAPTER_NOTES_TABLE?.courseId, courseId));
@@ -21,6 +21,7 @@ export async function POST(req) {
       .where(eq(STUDY_TYPE_CONTENT_TABLE?.courseId, courseId));
 
     // get all other data
+    if (notes.length == 0) notes = null;
 
     const result = {
       notes: notes,

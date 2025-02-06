@@ -66,6 +66,7 @@ function StudyMaterialList({ courseId, course }) {
               studyTypeContent={studyMaterial}
               courseId={courseId}
               chapters={course?.courseLayout?.chapters}
+              course={course}
               reFreshCard={getStudyMaterial}
             />
           ))}

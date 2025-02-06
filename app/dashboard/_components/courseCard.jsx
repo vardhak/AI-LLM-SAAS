@@ -42,7 +42,7 @@ function CourseCard({ course }) {
         </div>
 
         <div className="mt-3 flex justify-end">
-          {course?.status == "Generating" ? (
+          {/* {course?.status == "Generating" ? (
             <h2 className="text-xs bg-gray-400 text-white flex justify-between rounded-full px-2 py-1 items-center">
               <LoaderPinwheel className="h-3 w-3 mr-1 animate-spin" />{" "}
               Generating...
@@ -51,7 +51,10 @@ function CourseCard({ course }) {
             <Link href={"/course/" + course?.courseId}>
               <Button>View</Button>
             </Link>
-          )}
+          )} */}
+          <Link href={"/course/" + course?.courseId}>
+            <Button>View</Button>
+          </Link>
         </div>
       </div>
     </div>

@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import CourseIntro from "./_components/CourseIntro";
 import StudyMaterialList from "./_components/StudyMaterialList";
 import ChapterList from "./_components/ChapterList";
+import Header from "@/app/header/header";
 
 function Course() {
   const { courseId } = useParams();
@@ -18,12 +19,11 @@ function Course() {
     const result = await axios.get("/api/courses?courseId=" + courseId);
 
     setCourse(result.data.course);
-
-    // console.log(result.data);
+    console.log(result.data);
   };
   return (
     <div>
-      <DashboardHearder />
+      <Header />
       <div className="mx-10 md:mx-30 lg:mx-60 mt-10">
         {/* course intro */}
         <CourseIntro course={course} />

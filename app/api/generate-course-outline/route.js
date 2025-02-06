@@ -41,15 +41,5 @@ export async function POST(req) {
 
   // trigger the generate notes functions
 
-  const NotesResult = await inngest.send({
-    name: "notes.generate",
-    data: {
-      course: dbResult[0].resp,
-    },
-  });
-
-  return NextResponse.json([
-    { result: dbResult[0] },
-    { NotesResult: NotesResult },
-  ]);
+  return NextResponse.json(dbResult[0].resp);
 }

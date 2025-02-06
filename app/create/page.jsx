@@ -44,12 +44,12 @@ function CreatePage() {
 
     // console.log(result.data);
     // console.log(result);
-    setIsLoading(false);
-    router.replace("/dashboard");
     toast({
       title: "Course Status",
       description: "Your Course Is Being Generating, Please Wait Or Refresh !",
     });
+    setIsLoading(false);
+    router.replace("/dashboard");
   };
 
   return (

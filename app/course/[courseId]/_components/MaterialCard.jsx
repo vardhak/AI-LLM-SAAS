@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { db } from "@/configs/db";
-import { STUDY_TYPE_CONTENT_TABLE } from "@/configs/schema";
+import { STUDY_DATA_TABLE, STUDY_TYPE_CONTENT_TABLE } from "@/configs/schema";
 import axios from "axios";
 import { and, eq } from "drizzle-orm";
 import { Loader2Icon } from "lucide-react";
@@ -14,6 +14,7 @@ function MaterialCard({
   courseId,
   chapters,
   reFreshCard,
+  course,
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -25,48 +26,78 @@ function MaterialCard({
   const GenerateStudyContent = async () => {
     setLoading(true);
 
-    try {
-      const data = await axios.post("/api/gen-studytype-content", {
-        courseId: courseId,
-        studyType: item.type,
-        chapters: titles,
-      });
+    if (item.type == "notes") {
+      try {
+        const notesData = await axios.post("/api/gen-course-notes", {
+          data: course,
+        });
 
-      // Assuming your API response is related to the studyTypeContent data.
-      // If studyTypeContent is updated based on the API response, you can do that here.
-
-      // Make sure the data was returned correctly
-      if (data && data.data) {
-        // You might want to update the studyTypeContent in the parent component
-        // or use a callback here to trigger the state change.
         let isDataReady = "";
-        while (isDataReady !== "READY") {
+        while (isDataReady !== "Ready") {
           // const [result, setResult] = useState([{ status: "notready" }]);
           let result = [{ status: "notready" }];
           try {
             const result2 = await db
               .select()
-              .from(STUDY_TYPE_CONTENT_TABLE)
-              .where(
-                and(
-                  eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseId),
-                  eq(STUDY_TYPE_CONTENT_TABLE.type, item.type)
-                )
-              );
+              .from(STUDY_DATA_TABLE)
+              .where(eq(STUDY_DATA_TABLE.courseId, courseId));
             if (result2.length != 0) result = result2;
           } catch (error) {
             console.error("Error checking data readiness:", error);
           }
-          console.log(result[0]);
+          await new Promise((resolve) => setTimeout(resolve, 30000));
+
+          console.log(result[0].status);
           isDataReady = result[0].status;
         }
-        // await new Promise((resolve) => setTimeout(resolve, 2000));
         reFreshCard(true);
+      } catch (er) {
+        console.error(er);
       }
-    } catch (errors) {
-      console.error("Error generating study content:", errors);
-    } finally {
-      // setLoading(false);
+    } else {
+      try {
+        const data = await axios.post("/api/gen-studytype-content", {
+          courseId: courseId,
+          studyType: item.type,
+          chapters: titles,
+        });
+
+        // Assuming your API response is related to the studyTypeContent data.
+        // If studyTypeContent is updated based on the API response, you can do that here.
+
+        // Make sure the data was returned correctly
+        if (data && data.data) {
+          // You might want to update the studyTypeContent in the parent component
+          // or use a callback here to trigger the state change.
+          let isDataReady = "";
+          while (isDataReady !== "READY") {
+            // const [result, setResult] = useState([{ status: "notready" }]);
+            let result = [{ status: "notready" }];
+            try {
+              const result2 = await db
+                .select()
+                .from(STUDY_TYPE_CONTENT_TABLE)
+                .where(
+                  and(
+                    eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseId),
+                    eq(STUDY_TYPE_CONTENT_TABLE.type, item.type)
+                  )
+                );
+              if (result2.length != 0) result = result2;
+            } catch (error) {
+              console.error("Error checking data readiness:", error);
+            }
+            console.log(result[0].status);
+            isDataReady = result[0].status;
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+          }
+          reFreshCard(true);
+        }
+      } catch (errors) {
+        console.error("Error generating study content:", errors);
+      } finally {
+        // setLoading(false);
+      }
     }
   };
 

@@ -1,12 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { UserButton } from "@clerk/nextjs";
+import Header from "./header/header";
 
 export default function Home() {
   return (
     <>
-      <h1>Hello folks</h1>
-      <Button>Subscribe</Button>
-      <UserButton />
+      <Header />
     </>
   );
 }

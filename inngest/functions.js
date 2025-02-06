@@ -10,6 +10,7 @@ import {
   GenerateFlashCards,
   notesGenAiModel3,
   notesGenAiModel4,
+  notesGenAiModelFinal,
 } from "@/configs/aiModel";
 import { eq } from "drizzle-orm";
 import { json } from "drizzle-orm/mysql-core";
@@ -70,28 +71,29 @@ export const GenerateNotes = inngest.createFunction(
       const Chapters = course?.courseLayout?.chapters;
       let index = 0;
 
-      Chapters.forEach(async (chapter) => {
+      // Create an array of promises instead of using forEach
+      const chapterPromises = Chapters.map(async (chapter, index) => {
         const PROMPT4 = `generate exam material detail content for each chapter, Make sure to include all topic point in the content, Make sure to give content in HTML format (do not add HTMLK, Head, Body, Title tag), provide it well styled more like a chatgpt like well structured output use tables or lists and any components to make it so astetic make titles bigger then subtitles slightly smaller and  make use of all red green blue yellow colors for text bold fonts and also try to make boxeses ofdifferent colors having lighter shadows which will be more beautifull just make sure that it must look the great html you can also provide examples or formulas or tables if required and  make sure to make all of it complete responsive on any device like mobile or tab or large screen and make sure provide a more in detail and more humanized information dont add any images the Chapters:${JSON.stringify(
           chapter
-          // )} return output as plain/text HTML code`;
-        )} return output as plain/text of HTML Code make sure the code is clean and work in browser use same key for all and do not add any extra column or key`;
+        )}make the chapter title bigger its not working and return output as plain/text of HTML Code make sure the code is clean and work in browser use same key for all and do not add any extra column or key`;
 
         const result = await notesGenAiModel4.sendMessage(PROMPT4);
-
         const aiResponse = result.response.text();
 
-        const inerted = await db
-          .insert(CHAPTER_NOTES_TABLE)
-          .values({
-            chapterId: index,
-            courseId: course?.courseId,
-            notes: { data: aiResponse },
-          })
-          .returning({ inertId: CHAPTER_NOTES_TABLE.id });
+        // Insert into the database
+        await db.insert(CHAPTER_NOTES_TABLE).values({
+          chapterId: index,
+          courseId: course?.courseId,
+          notes: { data: aiResponse },
+        });
 
         index = index + 1;
       });
-      return "notes for course generation completed !!";
+
+      // Wait for all the promises to resolve
+      await Promise.all(chapterPromises);
+
+      return "notes saved to database";
     });
 
     const fetchRecords = await step.run("fetch records", async () => {
