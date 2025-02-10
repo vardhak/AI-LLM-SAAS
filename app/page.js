@@ -32,7 +32,7 @@ export default function Home() {
           />
         </div>
         <div className=" max-w-[550px] flex justify-center items-center text-center flex-col">
-          <h1 className="text-4xl font-extrabold uppercase">
+          <h1 className="text-4xl font-extrabold uppercase">gen-
             ai-powered <span className="text-primary">exam prep</span> material
             generator
           </h1>
