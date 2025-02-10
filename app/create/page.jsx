@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectOption from "./_components/selectOption";
 import { Button } from "@/components/ui/button";
 import TopicInput from "./_components/topicInput";
@@ -12,6 +12,10 @@ import { toast } from "@/hooks/use-toast";
 
 function CreatePage() {
   const { user } = useUser();
+
+  useEffect(() => {
+    if (user) console.log(user.fullName);
+  }, [user]);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,23 +37,33 @@ function CreatePage() {
   const generateCourseOutline = async () => {
     setIsLoading(true);
     const courseId = uuidv4();
-    const daata = {
-      _courseId: courseId,
-      _topic: formData.topic,
-      _courseType: formData.studyType,
-      _difficultyLevel: formData.difLevel,
-      _createdBy: user?.primaryEmailAddress.emailAddress,
-    };
-    const result = await axios.post("api/generate-course-outline", daata);
+
+    try {
+      const response = await axios.post("/api/generate-course-outline", {
+        _courseId: courseId,
+        _topic: formData.topic,
+        _courseType: formData.studyType,
+        _difficultyLevel: formData.difLevel,
+        _createdBy: user?.primaryEmailAddress.emailAddress,
+        _date: new Date().toISOString(),
+      });
+
+      toast({
+        title: "Course Status",
+        description: "Your Course Is Now Ready !",
+      });
+      setIsLoading(false);
+      router.replace("/dashboard");
+    } catch (e) {
+      toast({
+        title: "Course Status",
+        description: "Your Course Is Not Generated There Is Some Error!",
+      });
+      console.error(e);
+    }
 
     // console.log(result.data);
     // console.log(result);
-    toast({
-      title: "Course Status",
-      description: "Your Course Is Being Generating, Please Wait Or Refresh !",
-    });
-    setIsLoading(false);
-    router.replace("/dashboard");
   };
 
   return (
@@ -95,7 +109,7 @@ function CreatePage() {
             {isLoading ? (
               <>
                 <LoaderPinwheel className="mr-2 h-4 w-4 animate-spin" />
-                Loading...
+                Generating...
               </>
             ) : (
               "Generate"

@@ -1,6 +1,7 @@
 "use client";
-import DashboardHearder from "@/app/dashboard/_components/header";
+import Header from "@/app/header/header";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import axios from "axios";
 import { date } from "drizzle-orm/mysql-core";
 import Link from "next/link";
@@ -29,9 +30,21 @@ function ViewPage() {
 
   return (
     <div>
-      <DashboardHearder />
+      <Header />
 
-      {notes && (
+      {notes == false ? (
+        <div className="grid grid-cols-2  gap-10 w-[85%] mx-auto mt-14">
+          {[1, 2, 3, 4].map((item, index) => (
+            <div key={index} className="flex flex-col space-y-3">
+              <Skeleton className="h-[180px] w-full rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[180px]" />
+                <Skeleton className="h-4 w-[170px]" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
         <div>
           <div className="flex gap-5 items-center w-[65%] mx-auto mt-10">
             {stepCount == 1 ? null : (

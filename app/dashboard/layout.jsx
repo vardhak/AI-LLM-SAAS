@@ -1,6 +1,8 @@
-import React from "react";
+"use client";
+import React, { useEffect } from "react";
 import DashboardHearder from "./_components/header";
 import DashboardSlider from "./_components/slider";
+import { useUser } from "@clerk/nextjs";
 
 function DashboardLayout({ children }) {
   return (

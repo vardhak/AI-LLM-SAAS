@@ -7,22 +7,15 @@ import {
   usersTable,
 } from "@/configs/schema";
 import {
+  courseOutlineAiModel,
+  GENERATE_QUIZ_AI_MODEL,
   GenerateFlashCards,
   notesGenAiModel3,
   notesGenAiModel4,
   notesGenAiModelFinal,
 } from "@/configs/aiModel";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { json } from "drizzle-orm/mysql-core";
-
-export const helloWorld = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "test/hello.world" },
-  async ({ event, step }) => {
-    await step.sleep("wait-a-moment", "1s");
-    return { message: `Hello ${event.data.email}!` };
-  }
-);
 
 export const checkIsNewUser = inngest.createFunction(
   { id: "user-auth" },
@@ -33,34 +26,103 @@ export const checkIsNewUser = inngest.createFunction(
     const { user } = event.data;
     step.run("check user and create new if not exist", async () => {
       // check if user exits
-
       const result = await db
         .select()
         .from(usersTable)
-        .where(eq(usersTable.email, user?.primaryEmailAddress.emailAddress));
+        .where(eq(usersTable.email, user?.primaryEmailAddress?.emailAddress));
 
-      console.log(user);
-
-      if (result.length == 0) {
+      if (result?.length == 0) {
         // user not present
-        const userRes = await db
-          .insert(usersTable)
-          .values({
-            name: user?.fullName,
-            email: user?.primaryEmailAddress?.emailAddress,
-          })
-          .returning({ id: usersTable.id });
-
-        console.log(userRes);
+        const userRes = await db.insert(usersTable).values({
+          name: user?.fullName,
+          email: user?.primaryEmailAddress?.emailAddress,
+        });
       }
-      return "hel";
+
+      return "user verification done";
     });
-    return "Success";
+    return "Success user athentication ";
+  }
+);
+
+export const GenerateCourse = inngest.createFunction(
+  { id: "AI_COURSE_GENERATOR" },
+  { event: "CREATE_COURSE" },
+
+  async ({ event, step }) => {
+    const {
+      _courseId,
+      _topic,
+      _courseType,
+      _difficultyLevel,
+      _createdBy,
+      _date,
+    } = event.data;
+
+    const generateCourse = await step.run("Generate Course", async () => {
+      // generate course layout using ai
+      const PROMPT =
+        "Generate the study material for " +
+        _topic +
+        " for " +
+        _courseType +
+        " and level of difficulty will be " +
+        _difficultyLevel +
+        " with summery of course, List of chapters along with summery and emoji icon for each chapter, topic list in list in chapter, all in JSON format.";
+      const aiResponse = await courseOutlineAiModel.sendMessage(PROMPT);
+
+      const aiResult = aiResponse.response.text();
+
+      const cleanAiRes = aiResult.replace(/```json\n|\n```/g, "").trim();
+
+      const parsedData = JSON.parse(cleanAiRes);
+
+      //save the result along with user input
+      const dbResult = await db
+        .insert(STUDY_DATA_TABLE)
+        .values({
+          courseId: _courseId,
+          topic: _topic,
+          courseType: _courseType,
+          createdBy: _createdBy,
+          difficultyLevel: _difficultyLevel,
+          courseLayout: parsedData,
+        })
+        .returning({ resp: STUDY_DATA_TABLE });
+
+      return "generation complete";
+    });
+
+    const updateCourseCredits = await step.run(
+      "Update Course Credits",
+      async () => {
+        // update course credits
+        // Step 1: Fetch current value of courseProgress
+        const courseUserCredits = await db
+          .select()
+          .from(usersTable)
+          .where(eq(usersTable?.email, _createdBy));
+
+        // Extract current value of courseProgress
+        const courseCredits = courseUserCredits[0]?.credits;
+
+        const result = await db
+          .update(usersTable)
+          .set({
+            credits: courseCredits + 1,
+          })
+          .where(eq(usersTable?.email, _createdBy));
+
+        return "Course Credits Updated";
+      }
+    );
+
+    return "AI_COURSE_GENERATOR SUCCEED !";
   }
 );
 
 export const GenerateNotes = inngest.createFunction(
-  { id: "generate-course" },
+  { id: "generate-course-notes" },
   { event: "notes.generate" },
   async ({ event, step }) => {
     const { course } = event.data;
@@ -96,15 +158,6 @@ export const GenerateNotes = inngest.createFunction(
       return "notes saved to database";
     });
 
-    const fetchRecords = await step.run("fetch records", async () => {
-      const notesRes = await db
-        .select()
-        .from(CHAPTER_NOTES_TABLE)
-        .where(eq(CHAPTER_NOTES_TABLE.courseId, course?.courseId));
-
-      return notesRes;
-    });
-
     const updateCourseStatus = await step.run(
       "update status to ready",
       async () => {
@@ -119,9 +172,32 @@ export const GenerateNotes = inngest.createFunction(
       }
     );
 
-    return fetchRecords;
+    const updateCourseProgress = await step.run("update Progress", async () => {
+      // Step 1: Fetch current value of courseProgress
+      const currentProgressResult = await db
+        .select()
+        .from(STUDY_DATA_TABLE)
+        .where(eq(STUDY_DATA_TABLE.courseId, course?.courseId));
+
+      // Extract current value of courseProgress
+      const currentProgress = currentProgressResult[0]?.courseProgress;
+
+      // Step 2: Increment the value and update
+      const result = await db
+        .update(STUDY_DATA_TABLE)
+        .set({
+          courseProgress: currentProgress + 1, // Increment currentProgress by 1
+        })
+        .where(eq(STUDY_DATA_TABLE.courseId, course?.courseId));
+
+      return "Course progress updated successfully";
+    });
+
+    return "notes generated ";
   }
 );
+
+// theis inngest function is used to generate the study data for the course like flashcards,quize and qa
 
 export const GenerateStudyTypeContent = inngest.createFunction(
   { id: "flash-cards" },
@@ -130,43 +206,142 @@ export const GenerateStudyTypeContent = inngest.createFunction(
   async ({ event, step }) => {
     const { courseId, studyType, chapters } = event.data;
 
-    const FlashCardResult = await step.run("generate flashcards", async () => {
-      const PROMPT = `Generate the flashcard on topic :${chapters} in JSON format with front back content, maximum 15`;
+    if (studyType == "flashcard") {
+      const FlashCardResult = await step.run(
+        "generate flashcards",
+        async () => {
+          const PROMPT = `Generate the flashcard on topic :${chapters} in JSON format with front back content, maximum 15`;
 
-      const aiResponse2 = GenerateFlashCards.sendMessage(PROMPT);
+          const aiResponse2 = GenerateFlashCards.sendMessage(PROMPT);
 
-      const res = (await aiResponse2).response.text();
-      const data = JSON.parse(res);
+          const res = (await aiResponse2).response.text();
+          const data = JSON.parse(res);
 
-      return data;
-    });
+          return data;
+        }
+      );
 
-    const svaeFlashcardToDb = await step.run(
-      "svae flashcards to db",
-      async () => {
+      const svaeFlashcardToDb = await step.run(
+        "svae flashcards to db",
+        async () => {
+          const dbResult = await db.insert(STUDY_TYPE_CONTENT_TABLE).values({
+            courseId: courseId,
+            content: FlashCardResult,
+            type: studyType,
+          });
+
+          return "flashcards saved to database !!";
+        }
+      );
+
+      const updateStatus = await step.run(
+        "update flashcards status",
+        async () => {
+          const res = await db
+            .update(STUDY_TYPE_CONTENT_TABLE)
+            .set({
+              status: "READY",
+            })
+            .where(
+              and(
+                eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseId),
+                eq(STUDY_TYPE_CONTENT_TABLE.type, studyType)
+              )
+            );
+
+          return "Status Updated";
+        }
+      );
+
+      const updateCourseProgress = await step.run(
+        "update Progress",
+        async () => {
+          // Step 1: Fetch current value of courseProgress
+          const currentProgressResult = await db
+            .select()
+            .from(STUDY_DATA_TABLE)
+            .where(eq(STUDY_DATA_TABLE.courseId, courseId));
+
+          // Extract current value of courseProgress
+          const currentProgress = currentProgressResult[0]?.courseProgress;
+
+          // Step 2: Increment the value and update
+          const result = await db
+            .update(STUDY_DATA_TABLE)
+            .set({
+              courseProgress: currentProgress + 1, // Increment currentProgress by 1
+            })
+            .where(eq(STUDY_DATA_TABLE.courseId, courseId));
+
+          return "Course progress updated successfully";
+        }
+      );
+    }
+
+    // generate the quize if request is for quiz
+
+    if (studyType == "quiz") {
+      const QuizResult = await step.run("generate flashcards", async () => {
+        const PROMPT = `Generate quiz on topic : ${chapters}  with question and options along with correct answer in JSON format minimum 10 questions`;
+        const AiQuzieRes = GENERATE_QUIZ_AI_MODEL.sendMessage(PROMPT);
+
+        const res = (await AiQuzieRes).response.text();
+        const data = JSON.parse(res);
+
+        return data;
+      });
+
+      const QuizDataSaved = await step.run("save quiz data to db", async () => {
         const dbResult = await db.insert(STUDY_TYPE_CONTENT_TABLE).values({
           courseId: courseId,
-          content: FlashCardResult,
+          content: QuizResult,
           type: studyType,
         });
 
-        return "flashcards saved to database !!";
-      }
-    );
+        return "quiz data saved !";
+      });
 
-    const updateStatus = await step.run(
-      "update flashcards status",
-      async () => {
+      const StatusUpdate = await step.run("update Quiz status", async () => {
         const res = await db
           .update(STUDY_TYPE_CONTENT_TABLE)
           .set({
             status: "READY",
           })
-          .where(eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseId));
+          .where(
+            and(
+              eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseId),
+              eq(STUDY_TYPE_CONTENT_TABLE.type, studyType)
+            )
+          );
 
-        return "Status Updated";
-      }
-    );
+        return "Quiz Status Updated";
+      });
+
+      const updateCourseProgress = await step.run(
+        "update Progress",
+        async () => {
+          // Step 1: Fetch current value of courseProgress
+          const currentProgressResult = await db
+            .select()
+            .from(STUDY_DATA_TABLE)
+            .where(eq(STUDY_DATA_TABLE.courseId, courseId));
+
+          // Extract current value of courseProgress
+          const currentProgress = currentProgressResult[0]?.courseProgress;
+
+          // Step 2: Increment the value and update
+          const result = await db
+            .update(STUDY_DATA_TABLE)
+            .set({
+              courseProgress: currentProgress + 1, // Increment currentProgress by 1
+            })
+            .where(eq(STUDY_DATA_TABLE.courseId, courseId));
+
+          return "Course progress updated successfully";
+        }
+      );
+    }
+
     return "DONE";
   }
 );

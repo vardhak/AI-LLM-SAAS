@@ -5,6 +5,7 @@ import {
   boolean,
   json,
   integer,
+  date,
 } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
@@ -12,6 +13,7 @@ export const usersTable = pgTable("users", {
   name: varchar().notNull(),
   email: varchar().notNull().unique(),
   ismember: boolean().default(false),
+  credits: integer().default(0),
 });
 
 export const STUDY_DATA_TABLE = pgTable("studyData", {
@@ -23,6 +25,8 @@ export const STUDY_DATA_TABLE = pgTable("studyData", {
   courseLayout: json(),
   createdBy: varchar().notNull(),
   status: varchar().default("Generating"),
+  courseProgress: integer().default(0),
+  date: date().default(new Date().toISOString()),
 });
 
 export const CHAPTER_NOTES_TABLE = pgTable("chapterNotes", {

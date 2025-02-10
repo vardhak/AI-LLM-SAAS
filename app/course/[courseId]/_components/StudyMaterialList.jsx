@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import MaterialCard from "./MaterialCard";
 import axios from "axios";
 import { resolve } from "styled-jsx/css";
+import { Toast } from "@radix-ui/react-toast";
+import { toast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function StudyMaterialList({ courseId, course }) {
   const materialList = [
@@ -43,36 +46,59 @@ function StudyMaterialList({ courseId, course }) {
   }, []);
 
   const getStudyMaterial = async () => {
-    const result = await axios.post("/api/study-type", {
-      courseId: courseId,
-      studyType: "ALL",
-    });
+    try {
+      const result = await axios.post("/api/study-type", {
+        courseId: courseId,
+        studyType: "ALL",
+      });
 
-    setStudyMaterial(result.data);
-    console.log("updated !!!! :)");
-    setLoad(true);
+      setStudyMaterial(result.data);
+      console.log("updated !!!! :)");
+      setLoad(true);
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: "Course Status",
+        description:
+          "The system is currently processing your request. Please hold on while the data loads.",
+      });
+    }
   };
 
   return (
-    load && (
-      <div className="mt-5">
-        <h2 className="capitalize font-medium text-xl">Study Material</h2>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-5">
-          {materialList?.map((item, index) => (
-            <MaterialCard
-              key={index}
-              item={item}
-              studyTypeContent={studyMaterial}
-              courseId={courseId}
-              chapters={course?.courseLayout?.chapters}
-              course={course}
-              reFreshCard={getStudyMaterial}
-            />
+    <>
+      {load == false ? (
+        <div className="grid md:grid-cols-4 grid-cols-1 mt-5 gap-10 ">
+          {[1, 2, 3, 4].map((item, index) => (
+            <div key={index} className="flex flex-col space-y-3">
+              <Skeleton className="h-[180px] w-full rounded-xl" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[180px]" />
+                <Skeleton className="h-4 w-[170px]" />
+              </div>
+            </div>
           ))}
         </div>
-      </div>
-    )
+      ) : (
+        <div className="mt-5">
+          <h2 className="capitalize font-medium text-xl">Study Material</h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-5">
+            {materialList?.map((item, index) => (
+              <MaterialCard
+                key={index}
+                item={item}
+                studyTypeContent={studyMaterial}
+                courseId={courseId}
+                chapters={course?.courseLayout?.chapters}
+                course={course}
+                reFreshCard={getStudyMaterial}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

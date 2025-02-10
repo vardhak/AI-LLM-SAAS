@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { db } from "@/configs/db";
 import { STUDY_DATA_TABLE, STUDY_TYPE_CONTENT_TABLE } from "@/configs/schema";
+import { toast } from "@/hooks/use-toast";
 import axios from "axios";
-import { and, eq } from "drizzle-orm";
+import { and, eq, max } from "drizzle-orm";
 import { Loader2Icon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -24,7 +25,12 @@ function MaterialCard({
   });
 
   const GenerateStudyContent = async () => {
+    let maxLoad = 0;
     setLoading(true);
+    toast({
+      title: `${item.name} Status`,
+      description: "Please allow 2-3 minutes for the resource to be generated.",
+    });
 
     if (item.type == "notes") {
       try {
@@ -33,7 +39,18 @@ function MaterialCard({
         });
 
         let isDataReady = "";
+        maxLoad = 0;
         while (isDataReady !== "Ready") {
+          maxLoad = maxLoad + 1;
+
+          if (maxLoad > 50) {
+            toast({
+              title: "Status",
+              description:
+                "There Is Error Generating The Notes. Please Try Again Later,Or Refresh The Page !",
+            });
+            break;
+          }
           // const [result, setResult] = useState([{ status: "notready" }]);
           let result = [{ status: "notready" }];
           try {
@@ -45,11 +62,15 @@ function MaterialCard({
           } catch (error) {
             console.error("Error checking data readiness:", error);
           }
-          await new Promise((resolve) => setTimeout(resolve, 30000));
+          await new Promise((resolve) => setTimeout(resolve, 15000));
 
           console.log(result[0].status);
           isDataReady = result[0].status;
         }
+        toast({
+          title: `${item.name} Status`,
+          description: `Your ${item.name} is ready !`,
+        });
         reFreshCard(true);
       } catch (er) {
         console.error(er);
@@ -69,12 +90,22 @@ function MaterialCard({
         if (data && data.data) {
           // You might want to update the studyTypeContent in the parent component
           // or use a callback here to trigger the state change.
-          let isDataReady = "";
-          while (isDataReady !== "READY") {
+          let isDataReadyCont = "";
+          maxLoad = 0;
+          while (isDataReadyCont !== "READY") {
+            maxLoad = maxLoad + 1;
+
+            if (maxLoad > 150) {
+              toast({
+                title: "Status",
+                description: `There Is Error Generating The ${item.name}. Please Try Again Later,Or Refresh The Page !`,
+              });
+              break;
+            }
             // const [result, setResult] = useState([{ status: "notready" }]);
-            let result = [{ status: "notready" }];
+            let resultContent = [{ status: "notready" }];
             try {
-              const result2 = await db
+              const result2Content = await db
                 .select()
                 .from(STUDY_TYPE_CONTENT_TABLE)
                 .where(
@@ -83,12 +114,12 @@ function MaterialCard({
                     eq(STUDY_TYPE_CONTENT_TABLE.type, item.type)
                   )
                 );
-              if (result2.length != 0) result = result2;
+              if (result2Content.length != 0) resultContent = result2Content;
             } catch (error) {
               console.error("Error checking data readiness:", error);
             }
-            console.log(result[0].status);
-            isDataReady = result[0].status;
+            console.log(resultContent[0].status);
+            isDataReadyCont = resultContent[0].status;
             await new Promise((resolve) => setTimeout(resolve, 2000));
           }
           reFreshCard(true);
@@ -129,7 +160,7 @@ function MaterialCard({
           disabled={loading}
         >
           {loading && <Loader2Icon className="animate-spin" />}
-          Generate
+          {loading == false ? "Generate" : "Generating..."}
         </Button>
       ) : (
         <Button

@@ -1,13 +1,23 @@
 import { courseOutlineAiModel, notesGenAiModel4 } from "@/configs/aiModel";
 import { db } from "@/configs/db";
-import { CHAPTER_NOTES_TABLE, STUDY_DATA_TABLE } from "@/configs/schema";
+import {
+  CHAPTER_NOTES_TABLE,
+  STUDY_DATA_TABLE,
+  usersTable,
+} from "@/configs/schema";
 import { inngest } from "@/inngest/client";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
-  const { _courseId, _topic, _courseType, _difficultyLevel, _createdBy } =
-    await req.json();
+  const {
+    _courseId,
+    _topic,
+    _courseType,
+    _difficultyLevel,
+    _createdBy,
+    _date,
+  } = await req.json();
 
   // generate course layout using ai
   const PROMPT =
@@ -39,7 +49,23 @@ export async function POST(req) {
     })
     .returning({ resp: STUDY_DATA_TABLE });
 
-  // trigger the generate notes functions
+  //update the course credits
 
-  return NextResponse.json(dbResult[0].resp);
+  // Step 1: Fetch current value of courseProgress
+  const courseUserCredits = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable?.email, _createdBy));
+
+  // Extract current value of courseProgress
+  const courseCredits = courseUserCredits[0]?.credits;
+
+  const result = await db
+    .update(usersTable)
+    .set({
+      credits: courseCredits + 1,
+    })
+    .where(eq(usersTable?.email, _createdBy));
+
+  return NextResponse.json(result);
 }
