@@ -7,7 +7,6 @@ import { date } from "drizzle-orm/mysql-core";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import "/note.css";
 
 function ViewPage() {
   const { courseId } = useParams();
