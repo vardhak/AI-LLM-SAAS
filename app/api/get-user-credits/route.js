@@ -6,10 +6,14 @@ import { NextResponse } from "next/server";
 export async function POST(req) {
   const { userEmail } = await req.json();
 
-  const result = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.email, userEmail));
+  try {
+    const result = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, userEmail));
 
-  return NextResponse.json(result);
+    return NextResponse.json(result);
+  } catch (e) {
+    return NextResponse.json({ error: e });
+  }
 }

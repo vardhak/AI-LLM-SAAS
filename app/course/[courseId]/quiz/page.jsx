@@ -72,7 +72,15 @@ function QuizPage() {
         </div>
       ) : (
         <div>
-          <div className="flex justify-center items-center w-[80%] mx-auto mt-10">
+          <div className="flex justify-center items-center w-[80%] mx-auto mt-8">
+            <QuizCard
+              quize={currentIndex}
+              data={quizData[currentIndex]}
+              resetAnswerState={resetAnswerState}
+            />
+          </div>
+
+          <div className="flex justify-center items-center w-[90%] mx-auto mt-6 mb-10">
             <Button
               variant={"outline"}
               size="sm"
@@ -102,14 +110,6 @@ function QuizPage() {
             </Button>
 
             {/* display quiz cards */}
-          </div>
-
-          <div className="flex justify-center items-center w-[80%] mx-auto mt-8">
-            <QuizCard
-              quize={currentIndex}
-              data={quizData[currentIndex]}
-              resetAnswerState={resetAnswerState}
-            />
           </div>
         </div>
       )}

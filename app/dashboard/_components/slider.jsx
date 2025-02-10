@@ -1,19 +1,18 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { index } from "drizzle-orm/mysql-core";
 import { HomeIcon, LayoutDashboard, Shield, UserCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import CousreStatus from "./cousreStatus";
 
-function DashboardSlider() {
+function DashboardSlider({ avCredits, Credits }) {
   const path = usePathname();
-  const { user } = useUser();
-  const [credits, setCredits] = useState(0);
+  const router = useRouter();
+
   const menuList = [
     {
       name: "Dashboard",
@@ -28,7 +27,7 @@ function DashboardSlider() {
     {
       name: "Profile",
       icon: UserCircle,
-      path: "/dashboard/profile",
+      path: "/dashboard/Profile",
     },
     {
       name: "Home",
@@ -36,34 +35,33 @@ function DashboardSlider() {
       path: "/",
     },
   ];
+  const [stop, setStop] = useState(false);
 
   useEffect(() => {
-    user && getCredits();
-  }, [user]);
-
-  const getCredits = async () => {
-    try {
-      const res = await axios.post("/api/get-user-credits", {
-        userEmail: user?.primaryEmailAddress.emailAddress,
-      });
-
-      setCredits(res.data[0]);
-      // console.log(res.data[0].credits);
-    } catch (e) {
-      console.error(e);
+    if (Credits >= avCredits) {
+      setStop(true);
     }
-  };
+  },[Credits]);
+
   return (
-    <div className="h-screen shadow-md flex flex-col items-center">
+    <div
+      className={`shadow-md bg-white hidden md:flex flex-col items-center fixed w-[255px] h-screen`}
+    >
       <div className="w-full flex justify-center items-center mt-2 gap-2">
         <Image src={"/logo.svg"} width={40} height={40} alt="logo" />
         <h1 className="text-2xl  font-extrabold">EasyStudy</h1>
       </div>
 
       <div className="mx-auto w-[80%] mt-10">
-        <Link href={"/create"} className="w-full">
-          <Button className="w-full">+ create new</Button>
-        </Link>
+        <Button
+          className="w-full"
+          disabled={stop}
+          onClick={() => {
+            router.push("/create");
+          }}
+        >
+          + create new
+        </Button>
 
         <div className="mt-5">
           {menuList.map((item, index) => (
@@ -80,15 +78,7 @@ function DashboardSlider() {
         </div>
       </div>
 
-      <div className="p-3 bg-slate-100 border rounded-lg  w-[95%] absolute bottom-10">
-        <h2 className="text-lg mb-2">available credites : 5</h2>
-        <Progress value={(credits.credits / 5) * 100} />
-        <h2 className="text-sm">{credits.credits} out of 5 credites used</h2>
-
-        <Link href={"dashboard/upgrade"} className="text-xs text-primary mt-3">
-          upgrade for more
-        </Link>
-      </div>
+      <CousreStatus avCredits={avCredits} Credits={Credits} className="" />
     </div>
   );
 }

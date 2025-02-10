@@ -345,3 +345,31 @@ export const GenerateStudyTypeContent = inngest.createFunction(
     return "DONE";
   }
 );
+
+export const upgradeCredits = inngest.createFunction(
+  { id: "upgrade-credits" },
+  { event: "update.UserCredits" },
+  async ({ event, step }) => {
+    const { email, credits } = event.data;
+
+    const response = await step.run("Get users credits", async () => {
+      const avCredits = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable?.email, email));
+
+      return avCredits[0].avilableCredits;
+    });
+
+    const updated = await step.run("Update user credits", async () => {
+      const res = await db
+        .update(usersTable)
+        .set({ avilableCredits: response + credits, ismember: true })
+        .where(eq(usersTable?.email, email));
+
+      return "user credits updaetd";
+    });
+
+    return "Credits Updated";
+  }
+);

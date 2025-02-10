@@ -134,7 +134,7 @@ function MaterialCard({
 
   return (
     <div
-      className={`flex shadow-md rounded-lg p-5 flex-col items-center ${
+      className={`flex shadow-md rounded-lg p-5 flex-col items-center border max-sm:py-10 ${
         studyTypeContent?.[item.type] == null && "grayscale"
       }`}
     >
@@ -152,7 +152,7 @@ function MaterialCard({
       <h2 className="font-medium mt-3">{item.name}</h2>
       <p className="text-gray-500 text-sm text-center">{item.discription}</p>
 
-      {studyTypeContent?.[item.type] == null ? (
+      {studyTypeContent?.[item.type] == null  ? (
         <Button
           className="mt-3 w-full"
           variant="outline"

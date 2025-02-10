@@ -20,52 +20,64 @@ export async function POST(req) {
   } = await req.json();
 
   // generate course layout using ai
-  const PROMPT =
-    "Generate the study material for " +
-    _topic +
-    " for " +
-    _courseType +
-    " and level of difficulty will be " +
-    _difficultyLevel +
-    " with summery of course, List of chapters along with summery and emoji icon for each chapter, topic list in list in chapter, all in JSON format.";
-  const aiResponse = await courseOutlineAiModel.sendMessage(PROMPT);
+  try {
+    const PROMPT =
+      "Generate the study material for " +
+      _topic +
+      " for " +
+      _courseType +
+      " and level of difficulty will be " +
+      _difficultyLevel +
+      " with summery of course, List of chapters along with summery and emoji icon for each chapter, topic list in list in chapter, all in JSON format.";
+    const aiResponse = await courseOutlineAiModel.sendMessage(PROMPT);
 
-  const aiResult = aiResponse.response.text();
+    const aiResult = aiResponse.response.text();
 
-  const cleanAiRes = aiResult.replace(/```json\n|\n```/g, "").trim();
+    const cleanAiRes = aiResult.replace(/```json\n|\n```/g, "").trim();
 
-  const parsedData = JSON.parse(cleanAiRes);
+    const parsedData = JSON.parse(cleanAiRes);
 
-  //save the result along with user input
-  const dbResult = await db
-    .insert(STUDY_DATA_TABLE)
-    .values({
-      courseId: _courseId,
-      topic: _topic,
-      courseType: _courseType,
-      createdBy: _createdBy,
-      difficultyLevel: _difficultyLevel,
-      courseLayout: parsedData,
-    })
-    .returning({ resp: STUDY_DATA_TABLE });
+    //save the result along with user input
+    const dbResult = await db
+      .insert(STUDY_DATA_TABLE)
+      .values({
+        courseId: _courseId,
+        topic: _topic,
+        courseType: _courseType,
+        createdBy: _createdBy,
+        difficultyLevel: _difficultyLevel,
+        courseLayout: parsedData,
+      })
+      .returning({ resp: STUDY_DATA_TABLE });
 
-  //update the course credits
+    //update the course credits
 
-  // Step 1: Fetch current value of courseProgress
-  const courseUserCredits = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable?.email, _createdBy));
+    // Step 1: Fetch current value of courseProgress
+    const courseUserCredits = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable?.email, _createdBy));
 
-  // Extract current value of courseProgress
-  const courseCredits = courseUserCredits[0]?.credits;
+    // Extract current value of courseProgress
+    const courseCredits = courseUserCredits[0]?.usedCredits;
+    const courseCreditsAvailable = courseUserCredits[0]?.avilableCredits;
 
-  const result = await db
-    .update(usersTable)
-    .set({
-      credits: courseCredits + 1,
-    })
-    .where(eq(usersTable?.email, _createdBy));
+    const result = await db
+      .update(usersTable)
+      .set({
+        usedCredits: courseCredits + 1,
+      })
+      .where(eq(usersTable?.email, _createdBy));
 
-  return NextResponse.json(result);
+    if (courseCredits + 1 >= courseCreditsAvailable) {
+      const result = await db
+        .update(usersTable)
+        .set({ ismember: false })
+        .where(eq(usersTable?.email, _createdBy));
+    }
+
+    return NextResponse.json(result);
+  } catch (e) {
+    return NextResponse.json({ error: e });
+  }
 }

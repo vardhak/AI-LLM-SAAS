@@ -7,6 +7,7 @@ import { date } from "drizzle-orm/mysql-core";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import "/note.css";
 
 function ViewPage() {
   const { courseId } = useParams();
@@ -19,21 +20,25 @@ function ViewPage() {
   }, []);
 
   const GetNotes = async () => {
-    const result = await axios.post("/api/study-type", {
-      courseId: courseId,
-      studyType: "notes",
-    });
+    try {
+      const result = await axios.post("/api/study-type", {
+        courseId: courseId,
+        studyType: "notes",
+      });
 
-    setNotes(result.data);
+      setNotes(result.data);
+      console.log(notes);
+    } catch (e) {
+      console.log(e);
+    }
   };
-  console.log(notes);
 
   return (
     <div>
       <Header />
 
       {notes == false ? (
-        <div className="grid grid-cols-2  gap-10 w-[85%] mx-auto mt-14">
+        <div className="grid grid-cols-2  gap-10 w-[85%] mx-auto mt-14 ">
           {[1, 2, 3, 4].map((item, index) => (
             <div key={index} className="flex flex-col space-y-3">
               <Skeleton className="h-[180px] w-full rounded-xl" />
@@ -46,7 +51,7 @@ function ViewPage() {
         </div>
       ) : (
         <div>
-          <div className="flex gap-5 items-center w-[65%] mx-auto mt-10">
+          <div className="flex gap-5 items-center w-[95%] md:w-[65%] mx-auto mt-10">
             {stepCount == 1 ? null : (
               <Button
                 size="sm"
@@ -78,15 +83,15 @@ ${index < stepCount ? "bg-primary" : "bg-gray-200"}`}
               </Button>
             )}
           </div>
-          <div className="w-[85%] mx-auto mt-16">
+          <div className="w-[90%] md:w-[85%] mx-auto mt-16">
             {stepCount <= notes?.length ? (
               <div
                 className=""
                 dangerouslySetInnerHTML={{
-                  __html: (notes[stepCount - 1].notes?.data).replace(
-                    "```html",
-                    ""
-                  ),
+                  __html: (
+                    notes[stepCount - 1].notes?.data +
+                    "<style> div{overflow-x: auto;} </style>"
+                  ).replace("```html", ""),
                 }}
               />
             ) : (

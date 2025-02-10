@@ -63,14 +63,14 @@ function FlashcardPage() {
 
       {flashcards != false ? (
         <div className="mt-12 md:mt-6">
-          <div className="flex justify-center items-center flex-col">
+          <div className="flex justify-center items-center flex-col w-[85%] mx-auto text-center">
             <h2 className="text-4xl font-bold uppercase">flashcards</h2>
-            <p className="text-sm text-slate-600 capitalize my-2">
+            <p className="text-sm text-slate-600 capitalize my-2 max-md:mt-4 max-md:text-lg">
               flashcards : an ultimate tool for learning and retaining concepts{" "}
             </p>
           </div>
 
-          <Carousel setApi={setApi} className="w-[50%] mx-auto mt-4">
+          <Carousel setApi={setApi} className="w-[77%] mx-auto mt-4">
             <CarouselContent>
               {flashcards?.map((item, index) => (
                 <CarouselItem

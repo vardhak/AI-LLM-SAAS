@@ -11,16 +11,20 @@ export async function POST(req) {
     _date,
   } = await req.json();
 
-  const result = await inngest.send({
-    event: "CREATE_COURSE",
-    data: {
-      _courseId: _courseId,
-      _topic: _topic,
-      _courseType: _courseType,
-      _difficultyLevel: _difficultyLevel,
-      _createdBy: _createdBy,
-      _date: _date,
-    },
-  });
-  return NextResponse.json(result);
+  try {
+    const result = await inngest.send({
+      event: "CREATE_COURSE",
+      data: {
+        _courseId: _courseId,
+        _topic: _topic,
+        _courseType: _courseType,
+        _difficultyLevel: _difficultyLevel,
+        _createdBy: _createdBy,
+        _date: _date,
+      },
+    });
+    return NextResponse.json(result);
+  } catch (e) {
+    return NextResponse.json({ error: e });
+  }
 }

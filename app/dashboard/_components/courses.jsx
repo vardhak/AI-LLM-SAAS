@@ -50,14 +50,19 @@ function Courses() {
 
   async function getCourseData() {
     setLoading(true);
-    const result = await axios.post("api/courses", {
-      createdBy: user?.primaryEmailAddress.emailAddress,
-    });
-    console.log(result.data.result);
+    try {
+      const result = await axios.post("api/courses", {
+        createdBy: user?.primaryEmailAddress.emailAddress,
+      });
+      console.log(result.data.result);
 
-    setCourseData(result.data.result);
-    // setCourseProgress(result.data.)
-    setLoading(false);
+      setCourseData(result.data.result);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      // setCourseProgress(result.data.)
+      setLoading(false);
+    }
   }
 
   return (

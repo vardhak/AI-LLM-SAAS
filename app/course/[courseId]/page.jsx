@@ -39,17 +39,20 @@ function Course() {
   const getImagePath = (courseType) => {
     // Find the matching course type and return its image
     const course = coursList.find((item) => item.type === courseType);
-    return course ? course.image : "/konwledge.png"; // Default image in case the course type doesn't match
+    return course ? course.image : "/knowledge.png"; // Default image in case the course type doesn't match
   };
 
   useEffect(() => {
     GetCourse();
   }, []);
   const GetCourse = async () => {
-    const result = await axios.get("/api/courses?courseId=" + courseId);
-
-    setCourse(result.data.course);
-    console.log(result.data);
+    try {
+      const result = await axios.get("/api/courses?courseId=" + courseId);
+      setCourse(result.data.course);
+      console.log(result.data);
+    } catch (e) {
+      console.log(e);
+    }
   };
   return (
     <div>

@@ -6,7 +6,7 @@ function CourseIntro({ course, imgPath }) {
   return (
     <>
       {course == null ? null : (
-        <div className="flex gap-5 items-center p-5 shadow-md rounded-lg ">
+        <div className="flex gap-5 items-center p-5 shadow-md rounded-lg flex-col md:flex-row border">
           <Image src={imgPath} alt="know" width={70} height={70} />
 
           <div className="flex flex-col gap-2">

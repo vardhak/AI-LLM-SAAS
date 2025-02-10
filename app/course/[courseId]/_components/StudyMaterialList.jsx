@@ -81,9 +81,9 @@ function StudyMaterialList({ courseId, course }) {
         </div>
       ) : (
         <div className="mt-5">
-          <h2 className="capitalize font-medium text-xl">Study Material</h2>
+          <h2 className="capitalize font-medium text-xl max-md:text-3xl max-md:flex max-md:justify-center max-md:items-center max-md:my-8">Study Material</h2>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 max-sm:gap-y-8 mt-5">
             {materialList?.map((item, index) => (
               <MaterialCard
                 key={index}

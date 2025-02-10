@@ -39,7 +39,7 @@ function QuizCard({ quize, data, resetAnswerState }) {
             <Button
               key={index}
               variant="outline"
-              className={`px-9 py-6 rounded-lg text-wrap hover:bg-primary hover:text-white transition ease-in-out duration-150`}
+              className={`px-6 max-sm:text-lg max-sm:py-3 min-h-fit rounded-lg text-wrap hover:bg-primary hover:text-white transition ease-in-out duration-150`}
               onClick={() => {
                 checkAnswer(item);
               }}
@@ -48,7 +48,7 @@ function QuizCard({ quize, data, resetAnswerState }) {
             </Button>
           ))}
         </div>
-        <div className="flex justify-center items-center text-center mt-10">
+        <div className="flex justify-center items-center text-center mt-10 max-sm:mb-2">
           <h1
             className={`${displayWrite} p-3 capitalize bg-green-100 font-bold rounded-lg text-wrap border text-green-400 transition ease-in-out duration-150`}
           >

@@ -14,6 +14,7 @@ function Provider({ children }) {
 
   const checkIsNewUser = async () => {
     // check if user exits
+    console.log(user);
 
     const result = await db
       .select()
@@ -24,10 +25,20 @@ function Provider({ children }) {
 
     if (result?.length == 0) {
       // user not present
+      let name = user?.fullName;
+      if (name == null) {
+        name = user?.firstName;
+        if (name == null) {
+          name == user?.primaryEmailAddress?.emailAddress;
+          if (name == null) {
+            name = "abc";
+          }
+        }
+      }
       const userRes = await db
         .insert(usersTable)
         .values({
-          name: user?.fullName,
+          name: name,
           email: user?.primaryEmailAddress?.emailAddress,
         })
         .returning({ id: usersTable.id });

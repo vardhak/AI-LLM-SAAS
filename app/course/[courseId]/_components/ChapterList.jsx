@@ -5,7 +5,7 @@ function ChapterList({ course }) {
 
   return (
     <div className="mt-5">
-      <h2 className="capitalize font-medium text-xl">Chapters</h2>
+      <h2 className="capitalize font-medium text-xl  max-md:text-3xl max-md:flex max-md:justify-center max-md:items-center max-md:my-8">Chapters</h2>
 
       <div className="my-7">
         {CHAPTERS?.map((chapter, key) => (
