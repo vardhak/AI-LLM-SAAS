@@ -13,7 +13,8 @@ if (typeof window !== "undefined") {
 }
 
 function Upgrade() {
-  const { router } = useRouter();
+  const router = useRouter();
+
   const { user } = useUser();
 
   const [isProcessing, setProcessing] = useState(false);
@@ -42,14 +43,17 @@ function Upgrade() {
               _email: user?.primaryEmailAddress?.emailAddress,
               _credits: CREDITS,
             });
-            console.log("credits updated");
-            router.push("/dashboard");
+            console.log(response.status);
             toast({
               title: "EasyStudy",
-              description: "Your plan has been upgraded successfully",
+              description: `Your plan has been upgraded successfully status : ${
+                response.status == 200 ? "PAYED" : "PENDING"
+              }`,
             });
           } catch (e) {
             console.log(e);
+          } finally {
+            router.push("/");
           }
         },
         prefill: {

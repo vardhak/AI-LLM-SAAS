@@ -47,6 +47,7 @@ export async function POST(req) {
         createdBy: _createdBy,
         difficultyLevel: _difficultyLevel,
         courseLayout: parsedData,
+        date: _date,
       })
       .returning({ resp: STUDY_DATA_TABLE });
 

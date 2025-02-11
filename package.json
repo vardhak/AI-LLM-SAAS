@@ -32,6 +32,7 @@
     "react-card-flip": "^1.2.3",
     "react-dom": "^18",
     "react-dropdown-menu": "^0.0.2",
+    "react-loading": "^2.0.3",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.5",
